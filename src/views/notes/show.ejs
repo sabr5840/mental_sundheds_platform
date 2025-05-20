@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Note: <%= note.title %></title>
+  <style>
+    body {
+      margin:0;
+      font-family:Arial,sans-serif;
+      background:#fafafa;
+      color:#333;
+    }
+    .container {
+      max-width: 600px;
+      margin: 2rem auto;
+      background: #fff;
+      padding: 1.5rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h1 { margin-top:0; font-size:1.8rem; }
+    .meta {
+      color:#555;
+      margin-bottom:1rem;
+    }
+    .content {
+      white-space: pre-wrap;
+      line-height:1.5;
+      margin-bottom:2rem;
+    }
+    .actions a, .actions form {
+      display:inline-block;
+      margin-right:1rem;
+    }
+    .actions a {
+      padding:0.5rem 1rem;
+      background:#f5b7b1;
+      color:#333;
+      text-decoration:none;
+      border-radius:0.25rem;
+    }
+    .actions a:hover { background:#e5989b; }
+    .actions button {
+      padding:0.5rem 1rem;
+      background:#e74c3c;
+      color:#fff;
+      border:none;
+      border-radius:0.25rem;
+      cursor:pointer;
+    }
+    .actions button:hover { background:#c0392b; }
+    a.back {
+      display:inline-block;
+      margin-bottom:1rem;
+      color:#0077cc;
+      text-decoration:none;
+    }
+    a.back:hover { text-decoration:underline; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="/notes" class="back">← Tilbage til oversigt</a>
+    <h1><%= note.title %></h1>
+    <div class="meta">
+      Kategori: <strong><%= note.category %></strong> |
+      Oprettet <%= note.createdAt.toLocaleDateString('da-DK') %>
+    </div>
+    <div class="content">
+      <%= note.content %>
+    </div>
+    <div class="actions">
+      <a href="/notes/<%= note.id %>/edit">Rediger</a>
+      <form action="/notes/<%= note.id %>/delete" method="POST" onsubmit="return confirm('Er du sikker?')">
+        <button type="submit">Slet</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

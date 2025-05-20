@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dine Noter</title>
+</head>
+<body>
+  <h1>Dine Noter</h1>
+  <p><a href="/notes/new">+ Opret ny note</a></p>
+  <ul>
+    <% if (notes.length === 0) { %>
+      <li>Ingen noter endnu.</li>
+    <% } else { %>
+      <% notes.forEach(note => { %>
+        <li>
+          <a href="/notes/<%= note.id %>">
+            <em>[<%= note.category %>]</em>
+            <strong><%= note.title %></strong>
+            (oprettet <%= note.createdAt.toLocaleDateString('da-DK') %>)
+          </a>
+        </li>
+      <% }) %>
+    <% } %>
+  </ul>
+  <p><a href="/notes">← Tilbage til dashboard</a></p>
+</body>
+</html>

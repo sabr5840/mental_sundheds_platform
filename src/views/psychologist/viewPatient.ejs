@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Patient: <%= profile.name %></title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #fafafa;
+      color: #333;
+    }
+    header {
+      text-align: center;
+      padding: 2rem 1rem 1rem;
+    }
+    header h1 { margin: 0; font-size: 2rem; }
+    header .meta {
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+      color: #555;
+    }
+    header a.back {
+      display: inline-block;
+      margin-top: 1rem;
+      color: #0077cc;
+      text-decoration: none;
+    }
+    header a.back:hover { text-decoration: underline; }
+
+    main {
+      max-width: 1000px;
+      margin: 0 auto 2rem;
+      padding: 0 1rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+    .card {
+      background: #e8e7f6;
+      padding: 1.5rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      text-align: center;
+    }
+    .card h2 {
+      margin-top: 0;
+      font-size: 1.1rem;
+      color: #2e2e2e;
+    }
+    .card .empty {
+      color: #777;
+      font-style: italic;
+    }
+    .card ul {
+      list-style: none;
+      padding: 0;
+      margin: 0.5rem 0 0;
+    }
+    .card li {
+      margin-bottom: 0.75rem;
+    }
+    .card a {
+      color: inherit;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .card a:hover { text-decoration: underline; }
+    .card small {
+      display: block;
+      margin-top: 0.25rem;
+      font-size: 0.85rem;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1><%= profile.name %></h1>
+    <div class="meta">
+      Født: <%= profile.birthdate.toLocaleDateString('da-DK') %> 
+    </div>
+    <a href="/psychologist" class="back">← Tilbage til oversigt</a>
+  </header>
+  <main>
+    <div class="grid">
+      <% categories.forEach(cat => { %>
+        <div class="card">
+          <h2><%= cat %></h2>
+          <% if (groupedNotes[cat] && groupedNotes[cat].length) { %>
+            <ul>
+              <% groupedNotes[cat].forEach(note => { %>
+                <li>
+                  <a href="/psychologist/patients/<%= patientId %>/notes/<%= note.id %>">
+                    <%= note.title %>
+                  </a>
+                  <small><%= note.createdAt.toLocaleDateString('da-DK') %></small>
+                </li>
+              <% }) %>
+            </ul>
+          <% } else { %>
+            <p class="empty">Ingen noter under denne kategori.</p>
+          <% } %>
+        </div>
+      <% }) %>
+    </div>
+  </main>
+</body>
+</html>

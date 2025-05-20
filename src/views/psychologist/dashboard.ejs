@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Psykologens univers</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #fafafa;
+      color: #333;
+    }
+    header {
+      text-align: center;
+      padding: 2rem 1rem 1rem;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 2.5rem;
+    }
+    header form {
+      display: inline-block;
+      margin-top: 1rem;
+    }
+    header button {
+      background: #f5b7b1;
+      border: none;
+      border-radius: 2rem;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    header button:hover { background: #e5989b; }
+    header a.btn-new {
+      display: inline-block;
+      margin-left: 1rem;
+      background: #f5b7b1;
+      padding: 0.75rem 1.5rem;
+      border-radius: 2rem;
+      text-decoration: none;
+      color: #333;
+      transition: background 0.2s ease;
+    }
+    header a.btn-new:hover { background: #e5989b; }
+
+    main {
+      max-width: 1000px;
+      margin: 0 auto 2rem;
+      padding: 0 1rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+    .card {
+      background: #e8e7f6;
+      padding: 1.5rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      text-align: center;
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+    .card a {
+      color: inherit;
+      text-decoration: none;
+    }
+    .card a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Psykologens univers</h1>
+    <form action="/auth/logout" method="POST">
+      <button type="submit">Log ud</button>
+    </form>
+    <a href="/psychologist/patients/new" class="btn-new">Opret ny patient</a>
+  </header>
+  <main>
+    <div class="grid">
+      <% if (patients.length === 0) { %>
+        <p>Du har endnu ingen patienter.</p>
+      <% } else { %>
+        <% patients.forEach(p => { %>
+          <div class="card">
+            <a href="/psychologist/patients/<%= p.id %>"><%= p.name %></a>
+          </div>
+        <% }) %>
+      <% } %>
+    </div>
+  </main>
+</body>
+</html>

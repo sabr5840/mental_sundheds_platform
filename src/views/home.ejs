@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Forside</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; font-family: Arial,sans-serif; background: #fafafa; color: #333; line-height:1.4; text-align:center; padding:2rem; }
+    h1 { font-size:2.5rem; margin-bottom:1rem; }
+    .lead { max-width:600px; margin:0 auto 2rem; color:#555; }
+    .btn-group { display:flex; flex-direction:column; gap:1rem; max-width:300px; margin:0 auto; }
+    .btn { padding:1rem; background:#f5b7b1; color:#333; text-decoration:none; font-size:1.2rem; border-radius:1rem; transition:background .2s; }
+    .btn:hover { background:#e5989b; }
+  </style>
+</head>
+<body>
+  <h1>En digital dagbogsplatform for mental sundhed</h1>
+  <p class="lead">
+    Den digitale mental-sundhedsdagbog giver dig et privat rum til at skrive tanker og
+    følelser, som kun du og din psykolog kan se. Det giver psykologen løbende indblik,
+    gør sessionerne mere målrettede og hjælper jer begge med at opdage mønstre og fremskridt tidligt.
+
+  </p>
+  <div class="btn-group">
+    <a href="/auth/login" class="btn">Patient</a>
+    <a href="/psychologist/login" class="btn">Psykolog</a>
+  </div>
+</body>
+</html>
