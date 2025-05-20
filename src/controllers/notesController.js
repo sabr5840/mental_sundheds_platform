@@ -5,20 +5,20 @@ const categories = require('../config/categories');
 
 /**
  * GET /notes
- * Dashboard: grupperede noter pr. kategori + brugernavn + logout-knap
+ * Dashboard: grupperede noter pr. kategori
  */
 exports.dashboard = async (req, res, next) => {
   try {
     const userId = req.session.userId;
 
-    // 1) Hent brugerens navn
+    // Hent brugerens navn
     const { rows: userRows } = await pool.query(
       `SELECT name FROM users WHERE id = $1`,
       [userId]
     );
     const userName = userRows[0]?.name || 'bruger';
 
-    // 2) Hent alle noter for brugeren
+    // Hent noter
     const { rows: noteRows } = await pool.query(
       `SELECT id, title, category, created_at
        FROM notes
@@ -33,7 +33,7 @@ exports.dashboard = async (req, res, next) => {
       createdAt: new Date(r.created_at)
     }));
 
-    // 3) Gruppér noter pr. kategori
+    // Gruppér noter pr. kategori
     const groupedNotes = {};
     categories.forEach(c => groupedNotes[c] = []);
     notes.forEach(n => {
@@ -42,7 +42,7 @@ exports.dashboard = async (req, res, next) => {
       }
     });
 
-    // 4) Render dashboard-view
+    // Render dashboard-view
     res.render('notes/dashboard', {
       userName,
       categories,
@@ -113,6 +113,7 @@ exports.show = async (req, res, next) => {
   try {
     const userId = req.session.userId;
     const noteId = parseInt(req.params.id, 10);
+
     const { rows } = await pool.query(
       `SELECT id, title, content, category, created_at
        FROM notes
@@ -143,6 +144,7 @@ exports.showEditForm = async (req, res, next) => {
   try {
     const userId = req.session.userId;
     const noteId = parseInt(req.params.id, 10);
+
     const { rows } = await pool.query(
       `SELECT id, title, content, category
        FROM notes
@@ -152,8 +154,7 @@ exports.showEditForm = async (req, res, next) => {
     if (!rows.length) {
       return res.status(404).send('Note ikke fundet');
     }
-    const note = rows[0];
-    res.render('notes/edit', { note, categories });
+    res.render('notes/edit', { note: rows[0], categories });
   } catch (err) {
     next(err);
   }
@@ -168,12 +169,16 @@ exports.update = async (req, res, next) => {
     const userId = req.session.userId;
     const noteId = parseInt(req.params.id, 10);
     const { title, content, category } = req.body;
-    await pool.query(
+
+    const result = await pool.query(
       `UPDATE notes
        SET title = $1, content = $2, category = $3
        WHERE id = $4 AND user_id = $5`,
       [title, content, category, noteId, userId]
     );
+    if (result.rowCount === 0) {
+      return res.status(404).send('Note ikke fundet eller ingen adgang');
+    }
     res.redirect(`/notes/${noteId}`);
   } catch (err) {
     next(err);
@@ -188,11 +193,15 @@ exports.remove = async (req, res, next) => {
   try {
     const userId = req.session.userId;
     const noteId = parseInt(req.params.id, 10);
-    await pool.query(
+
+    const result = await pool.query(
       `DELETE FROM notes
        WHERE id = $1 AND user_id = $2`,
       [noteId, userId]
     );
+    if (result.rowCount === 0) {
+      return res.status(404).send('Note ikke fundet eller ingen adgang');
+    }
     res.redirect('/notes');
   } catch (err) {
     next(err);

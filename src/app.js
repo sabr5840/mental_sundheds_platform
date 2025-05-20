@@ -6,14 +6,16 @@ const session      = require('cookie-session');
 const flash        = require('connect-flash');
 const passport     = require('passport');
 const path         = require('path');
-const config       = require('./config');
-const errorHandler = require('./middlewares/errorHandler');
 const cron         = require('node-cron');
 const pool         = require('./db/client');
+const config       = require('./config');
+const ensureAuth   = require('./middlewares/ensureAuth');
+const ensureRole   = require('./middlewares/ensureRole');
+const errorHandler = require('./middlewares/errorHandler');
 
 const app = express();
 
-// 1) Sikkerheds-headers + body-parser
+// 1) Security headers + body parser
 app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -22,10 +24,13 @@ app.use(express.urlencoded({ extended: true }));
 app.use(session({
   name: 'session',
   keys: [config.sessionSecret],
-  maxAge: 24 * 60 * 60 * 1000
+  maxAge: 24 * 60 * 60 * 1000,     // 1 dag
+  httpOnly: true,
+  sameSite: 'lax',
+  secure: process.env.NODE_ENV === 'production'
 }));
 
-// 3) Flash-beskeder
+// 3) Flash messages
 app.use(flash());
 app.use((req, res, next) => {
   res.locals.error   = req.flash('error');
@@ -33,20 +38,34 @@ app.use((req, res, next) => {
   next();
 });
 
-// 4) Passport-init (til senere OIDC)
+// 4) Passport init
 app.use(passport.initialize());
 app.use(passport.session());
 
-// 5) EJS setup (uden layouts)
+// 5) EJS setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
 // 6) Mount routers
-app.use(require('./routes/auth'));
-app.use('/notes', require('./routes/notes'));
-app.use('/psychologist', require('./routes/psychologist'));
 
-// 7) Global fejl-handler
+// Public auth routes
+app.use(require('./routes/auth'));
+
+// Patient routes (kun patienter)
+app.use(
+  '/notes',
+  ensureAuth,
+  ensureRole('patient'),
+  require('./routes/notes')
+);
+
+// Psykolog routes
+app.use(
+  '/psychologist',
+  require('./routes/psychologist')
+);
+
+// 7) Global error handler
 app.use(errorHandler);
 
 // 8) Start server
@@ -54,14 +73,3 @@ app.listen(config.port, () => {
   console.log(`Server kører på http://localhost:${config.port}`);
 });
 
-// 9) Cron-job: slet noter ældre end 1 måned hver nat kl. 03:00
-cron.schedule('0 3 * * *', async () => {
-  try {
-    await pool.query(
-      `DELETE FROM notes WHERE created_at < NOW() - INTERVAL '1 month'`
-    );
-    console.log('Ældre noter end 1 måned slettet.');
-  } catch (err) {
-    console.error('Kunne ikke rydde gamle noter:', err);
-  }
-});

@@ -78,10 +78,10 @@ exports.showNewPatient = async (req, res, next) => {
  * Vis én patients profil + alle noter grupperet efter kategori
  */
 exports.showPatient = async (req, res, next) => {
-  const psychId   = req.session.userId;
-  const patientId = parseInt(req.params.id, 10);
-
   try {
+    const psychId   = req.session.userId;
+    const patientId = parseInt(req.params.id, 10);
+
     // 1) Hent patient-profil og tjek tilknytning
     const { rows: profRows } = await pool.query(
       `SELECT u.name, p.birthdate, p.start_date
@@ -91,7 +91,7 @@ exports.showPatient = async (req, res, next) => {
       [patientId, psychId]
     );
     if (!profRows.length) {
-      return res.status(404).send('Patient ikke fundet eller ikke tilknyttet dig');
+      return res.status(404).send('Adgang nægtet til denne patient');
     }
     const profile = {
       name:      profRows[0].name,
@@ -99,7 +99,7 @@ exports.showPatient = async (req, res, next) => {
       startDate: new Date(profRows[0].start_date)
     };
 
-    // 2) Hent alle noter for patienten
+    // 2) Hent noter for patienten
     const { rows: noteRows } = await pool.query(
       `SELECT id, title, category, created_at
        FROM notes
@@ -130,6 +130,7 @@ exports.showPatient = async (req, res, next) => {
       groupedNotes,
       patientId
     });
+
   } catch (err) {
     next(err);
   }
@@ -140,12 +141,12 @@ exports.showPatient = async (req, res, next) => {
  * Vis en enkelt note for psykologen
  */
 exports.viewNote = async (req, res, next) => {
-  const psychId   = req.session.userId;
-  const patientId = parseInt(req.params.patientId, 10);
-  const noteId    = parseInt(req.params.noteId, 10);
-
   try {
-    // 1) Tjek at patient er tilknyttet
+    const psychId   = req.session.userId;
+    const patientId = parseInt(req.params.patientId, 10);
+    const noteId    = parseInt(req.params.noteId, 10);
+
+    // 1) Sikr tilknytning
     const { rowCount: profCount } = await pool.query(
       `SELECT 1
        FROM patient_profiles
@@ -153,7 +154,7 @@ exports.viewNote = async (req, res, next) => {
       [patientId, psychId]
     );
     if (!profCount) {
-      return res.status(404).send('Patient ikke fundet eller ikke tilknyttet dig');
+      return res.status(404).send('Adgang nægtet til denne patient');
     }
 
     // 2) Hent noten
