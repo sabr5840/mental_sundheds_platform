@@ -4,7 +4,7 @@ const pool    = require('../db/client');
 const bcrypt  = require('bcryptjs');
 
 exports.showHome = (req, res) => {
-  res.render('home');  // en simpel EJS med to knapper: Patient / Psykolog
+  res.render('home');  // EJS med to knapper: Patient / Psykolog
 };
 
 exports.showRegister = (req, res) => {
@@ -18,26 +18,26 @@ exports.register = async (req, res, next) => {
     return res.redirect('/auth/register');
   }
   try {
-    // Hash password
+    // 1) Hash password
     const hash = await bcrypt.hash(password, 12);
 
-    // Opret bruger
+    // 2) Opret bruger
     const { rows } = await pool.query(
       `INSERT INTO users (name, email, password_hash)
        VALUES ($1, $2, $3)
-       RETURNING id`,
+       RETURNING id, role`,
       [name, email, hash]
     );
     const userId = rows[0].id;
 
-    // Opret patient_profile (inkl. birthdate og psych linkage via code)
+    // 3) Opret patient_profile (uden psykolog‐link foreløbig)
     await pool.query(
       `INSERT INTO patient_profiles (user_id, birthdate)
        VALUES ($1, $2)`,
       [userId, birthdate]
     );
 
-    // Hvis klinikken-kode indtastet, link patient til psykolog
+    // 4) Hvis kode indtastet, link til psykolog
     if (psychCode) {
       await pool.query(
         `UPDATE patient_profiles p
@@ -48,8 +48,9 @@ exports.register = async (req, res, next) => {
       );
     }
 
-    // Sæt session og send til eget dashboard
+    // 5) Sæt session + rolle, og redirect til patient‐dashboard
     req.session.userId = userId;
+    req.session.role   = 'patient';
     res.redirect('/notes');
   } catch (err) {
     if (err.code === '23505') {
@@ -67,6 +68,7 @@ exports.showLogin = (req, res) => {
 exports.login = async (req, res, next) => {
   const { email, password } = req.body;
   try {
+    // Hent bruger og rolleanvisning
     const { rows } = await pool.query(
       `SELECT id, password_hash, role
        FROM users
@@ -78,13 +80,19 @@ exports.login = async (req, res, next) => {
       return res.redirect('/auth/login');
     }
     const user = rows[0];
+
+    // 1) Verificér password
     const valid = await bcrypt.compare(password, user.password_hash);
     if (!valid) {
       req.flash('error', 'Forkert e-mail eller kodeord');
       return res.redirect('/auth/login');
     }
+
+    // 2) Sæt session‐data
     req.session.userId = user.id;
-    // Redirect baseret på rolle
+    req.session.role   = user.role;
+
+    // 3) Redirect pr. rolle
     if (user.role === 'psychologist') {
       return res.redirect('/psychologist');
     }

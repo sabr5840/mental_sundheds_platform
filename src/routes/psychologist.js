@@ -1,39 +1,34 @@
 // src/routes/psychologist.js
-const express              = require('express');
-const router               = express.Router();
-const flash                = require('connect-flash');
-const ensureAuth           = require('../middlewares/ensureAuth');
-const ensurePsych          = require('../middlewares/ensurePsych');
-const psychController      = require('../controllers/psychController');
-const psychAuthController  = require('../controllers/psychAuthController');
 
-// 1) Psykolog-login (offentligt)
+const express             = require('express');
+const router              = express.Router();
+const flash               = require('connect-flash');
+const ensureAuth          = require('../middlewares/ensureAuth');
+const ensureRole          = require('../middlewares/ensureRole');
+const psychController     = require('../controllers/psychController');
+const psychAuthController = require('../controllers/psychAuthController');
+
+// Flash‐middleware til login‐sider
 router.use(flash());
 router.use((req, res, next) => {
   res.locals.error = req.flash('error');
   next();
 });
 
+// 1) Offentlige ruter: psykolog‐login
 router.get('/login',  psychAuthController.showLogin);
 router.post('/login', psychAuthController.login);
 
-// Beskyt alle nedenstående ruter med både login + psykolog-rolle
-const guard = [ensureAuth, ensurePsych];
+// 2) Beskyttede ruter – kun psykologer
+const guard = [ensureAuth, ensureRole('psychologist')];
 
-// 2) Dashboard
-router.get('/', ...guard, psychController.dashboard);
-
-// 3) Opret ny patient – generér og vis kode
-router.get('/patients/new', ...guard, psychController.showNewPatient);
-
-// 4) Vis én patients dashboard
-router.get('/patients/:id', ...guard, psychController.showPatient);
-
-// NY LINJE – én note
+router.get('/',                     ...guard, psychController.dashboard);
+router.get('/patients/new',        ...guard, psychController.showNewPatient);
+router.get('/patients/:id',        ...guard, psychController.showPatient);
 router.get(
   '/patients/:patientId/notes/:noteId',
-  ...guard,
-  psychController.viewNote
+   ...guard,
+   psychController.viewNote
 );
 
 module.exports = router;
