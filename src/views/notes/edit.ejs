@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Rediger note</title>
   <style>
-    /* Samme styling som new.ejs */
     *, *::before, *::after { box-sizing: border-box; }
     body {
       margin: 0;
@@ -26,6 +25,14 @@
       margin-top: 0;
       font-size: 1.8rem;
       text-align: center;
+    }
+    .flash-error {
+      background: #fdecea;
+      color: #b71c1c;
+      border-radius: 0.25rem;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1rem;
+      font-size: 1rem;
     }
     form label {
       display: block;
@@ -68,19 +75,30 @@
 <body>
   <div class="container">
     <h1>Rediger note</h1>
+
+    <% if (error && error.length) { %>
+      <div class="flash-error">
+        <% error.forEach(msg => { %>
+          <div><%= msg %></div>
+        <% }) %>
+      </div>
+    <% } %>
+
     <form action="/notes/<%= note.id %>/edit" method="POST">
       <label for="title">Titel</label>
-      <input id="title" name="title" type="text" value="<%= note.title %>" required>
+      <input id="title" name="title" type="text"
+        required minlength="2" maxlength="80"
+        value="<%= old && old.title ? old.title : note.title %>">
 
       <label for="category">Kategori</label>
       <select id="category" name="category" required>
         <% categories.forEach(c => { %>
-          <option value="<%= c %>" <% if (c === note.category) { %>selected<% } %>><%= c %></option>
+          <option value="<%= c %>" <% if ((old && old.category === c) || (!old.category && note.category === c)) { %>selected<% } %>><%= c %></option>
         <% }) %>
       </select>
 
       <label for="content">Indhold</label>
-      <textarea id="content" name="content" rows="6"><%= note.content %></textarea>
+      <textarea id="content" name="content" rows="6" required maxlength="2000"><%= old && old.content !== undefined ? old.content : note.content %></textarea>
 
       <button type="submit">Gem ændringer</button>
     </form>

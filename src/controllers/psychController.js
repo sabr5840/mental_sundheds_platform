@@ -1,4 +1,4 @@
-// src/controllers/psychController.js
+// TODO ryd op, alt for ryddet og uoverskueligt kode
 
 const pool       = require('../db/client');
 const crypto     = require('crypto');
@@ -49,7 +49,6 @@ exports.showNewPatient = async (req, res, next) => {
     const psychId = req.session.userId;
     let code;
 
-    // Prøv at indsætte en kode, gentag ved konflikt
     while (true) {
       code = generateCode(25);
       try {
@@ -82,7 +81,6 @@ exports.showPatient = async (req, res, next) => {
     const psychId   = req.session.userId;
     const patientId = parseInt(req.params.id, 10);
 
-    // 1) Hent patient-profil og tjek tilknytning
     const { rows: profRows } = await pool.query(
       `SELECT u.name, p.birthdate, p.start_date
        FROM patient_profiles p
@@ -99,7 +97,6 @@ exports.showPatient = async (req, res, next) => {
       startDate: new Date(profRows[0].start_date)
     };
 
-    // 2) Hent noter for patienten
     const { rows: noteRows } = await pool.query(
       `SELECT id, title, category, created_at
        FROM notes
@@ -114,7 +111,6 @@ exports.showPatient = async (req, res, next) => {
       createdAt: new Date(r.created_at)
     }));
 
-    // 3) Gruppér noter på kategorier
     const groupedNotes = {};
     categories.forEach(c => { groupedNotes[c] = []; });
     notes.forEach(n => {
@@ -123,7 +119,6 @@ exports.showPatient = async (req, res, next) => {
       }
     });
 
-    // 4) Render view
     res.render('psychologist/viewPatient', {
       profile,
       categories,
@@ -146,7 +141,6 @@ exports.viewNote = async (req, res, next) => {
     const patientId = parseInt(req.params.patientId, 10);
     const noteId    = parseInt(req.params.noteId, 10);
 
-    // 1) Sikr tilknytning
     const { rowCount: profCount } = await pool.query(
       `SELECT 1
        FROM patient_profiles
@@ -157,7 +151,6 @@ exports.viewNote = async (req, res, next) => {
       return res.status(404).send('Adgang nægtet til denne patient');
     }
 
-    // 2) Hent noten
     const { rows } = await pool.query(
       `SELECT title, content, category, created_at
        FROM notes

@@ -1,4 +1,3 @@
-// src/config/categories.js
 module.exports = [
     'Bekymringer & Udfordringer',
     'Taknemmelighed',

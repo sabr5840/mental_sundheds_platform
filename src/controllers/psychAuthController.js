@@ -1,15 +1,20 @@
-// src/controllers/psychAuthController.js
 const pool   = require('../db/client');
 const bcrypt = require('bcryptjs');
+const { validationResult } = require('express-validator');
 
 exports.showLogin = (req, res) => {
   res.render('psychologist/login');
 };
 
 exports.login = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    req.flash('error', errors.array().map(e => e.msg));
+    return res.redirect('/psychologist/login');
+  }
+
   const { email, password, psychId } = req.body;
   try {
-    // Hent psykolog-bruger på både e-mail og rolle
     const { rows } = await pool.query(
       `SELECT id, password_hash, role
        FROM users
@@ -21,13 +26,11 @@ exports.login = async (req, res, next) => {
       return res.redirect('/psychologist/login');
     }
     const user = rows[0];
-    // Dummy-hash validering kan udelades hvis du vil
     const valid = await bcrypt.compare(password, user.password_hash);
     if (!valid) {
       req.flash('error', 'Forkert kodeord');
       return res.redirect('/psychologist/login');
     }
-    // Valider også indtastet psykolog-ID
     if (parseInt(psychId, 10) !== user.id) {
       req.flash('error', 'Forkert psykolog-ID');
       return res.redirect('/psychologist/login');

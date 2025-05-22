@@ -2,6 +2,7 @@
 
 const pool       = require('../db/client');
 const categories = require('../config/categories');
+const { validationResult } = require('express-validator');
 
 /**
  * GET /notes
@@ -11,14 +12,12 @@ exports.dashboard = async (req, res, next) => {
   try {
     const userId = req.session.userId;
 
-    // Hent brugerens navn
     const { rows: userRows } = await pool.query(
       `SELECT name FROM users WHERE id = $1`,
       [userId]
     );
     const userName = userRows[0]?.name || 'bruger';
 
-    // Hent noter
     const { rows: noteRows } = await pool.query(
       `SELECT id, title, category, created_at
        FROM notes
@@ -33,7 +32,6 @@ exports.dashboard = async (req, res, next) => {
       createdAt: new Date(r.created_at)
     }));
 
-    // Gruppér noter pr. kategori
     const groupedNotes = {};
     categories.forEach(c => groupedNotes[c] = []);
     notes.forEach(n => {
@@ -42,7 +40,6 @@ exports.dashboard = async (req, res, next) => {
       }
     });
 
-    // Render dashboard-view
     res.render('notes/dashboard', {
       userName,
       categories,
@@ -83,7 +80,7 @@ exports.list = async (req, res, next) => {
  * Vis formular til at oprette ny note
  */
 exports.showNewForm = (req, res) => {
-  res.render('notes/new', { categories });
+  res.render('notes/new', { categories, error: [], old: {} });
 };
 
 /**
@@ -91,6 +88,14 @@ exports.showNewForm = (req, res) => {
  * Opret ny note
  */
 exports.create = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).render('notes/new', {
+      categories,
+      error: errors.array().map(e => e.msg),
+      old: req.body
+    });
+  }
   try {
     const userId = req.session.userId;
     const { title, content, category } = req.body;
@@ -154,7 +159,7 @@ exports.showEditForm = async (req, res, next) => {
     if (!rows.length) {
       return res.status(404).send('Note ikke fundet');
     }
-    res.render('notes/edit', { note: rows[0], categories });
+    res.render('notes/edit', { note: rows[0], categories, error: [], old: {} });
   } catch (err) {
     next(err);
   }
@@ -165,9 +170,18 @@ exports.showEditForm = async (req, res, next) => {
  * Opdater en eksisterende note
  */
 exports.update = async (req, res, next) => {
+  const errors = validationResult(req);
+  const noteId = parseInt(req.params.id, 10);
+  if (!errors.isEmpty()) {
+    return res.status(422).render('notes/edit', {
+      note: { id: noteId, ...req.body },
+      categories,
+      error: errors.array().map(e => e.msg),
+      old: req.body
+    });
+  }
   try {
     const userId = req.session.userId;
-    const noteId = parseInt(req.params.id, 10);
     const { title, content, category } = req.body;
 
     const result = await pool.query(

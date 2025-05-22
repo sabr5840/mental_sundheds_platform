@@ -97,6 +97,9 @@
         <div class="flash flash-error"><%= error[0] %></div>
       <% } %>
       <form action="/psychologist/login" method="POST">
+        <!-- CSRF-token -->
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
         <label for="email">E-mail:</label>
         <input id="email" type="email" name="email" required>
         

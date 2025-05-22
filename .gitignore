@@ -1,0 +1,28 @@
+# Node-moduler (aldrig check dem ind)
+node_modules/
+
+# Miljø-variabler
+.env
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build-mapper (hvis du engang genererer dist/ eller build/)
+dist/
+build/
+
+# Coverage-rapporter
+coverage/
+
+# Editor- og OS-filer
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Dependency locks (valgfrit; mange trackers package-lock.json, så fjern linjen hvis du vil tracke den)
+# package-lock.json

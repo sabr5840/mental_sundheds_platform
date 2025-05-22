@@ -38,6 +38,14 @@
       max-width: 400px;
       width: 100%;
     }
+    .flash-error {
+      background: #fdecea;
+      color: #b71c1c;
+      border-radius: 0.25rem;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+    }
     form {
       display: flex;
       flex-direction: column;
@@ -76,14 +84,6 @@
     .links a:hover {
       text-decoration: underline;
     }
-    .flash {
-      padding: 0.75rem;
-      border-radius: 0.25rem;
-      margin-bottom: 1rem;
-      font-size: 0.9rem;
-    }
-    .flash-error { background: #fdecea; color: #b71c1c; }
-    .flash-success { background: #e8f5e9; color: #1b5e20; }
   </style>
 </head>
 <body>
@@ -92,22 +92,41 @@
   </header>
   <main>
     <div class="card">
+
       <% if (error && error.length) { %>
-        <div class="flash flash-error"><%= error[0] %></div>
+        <div class="flash-error">
+          <% error.forEach(msg => { %>
+            <div><%= msg %></div>
+          <% }) %>
+        </div>
       <% } %>
+
       <form action="/auth/register" method="POST">
+        <!-- CSRF-beskyttelse -->
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
         <label for="name">Fulde navn:</label>
-        <input id="name" type="text" name="name" required>
+        <input id="name" type="text" name="name" required minlength="2" maxlength="60"
+          value="<%= old && old.name ? old.name : '' %>">
+
         <label for="email">Email:</label>
-        <input id="email" type="email" name="email" required>
+        <input id="email" type="email" name="email" required
+          value="<%= old && old.email ? old.email : '' %>">
+
         <label for="password">Password:</label>
-        <input id="password" type="password" name="password" required>
+        <input id="password" type="password" name="password" required minlength="8">
+
         <label for="passwordConfirm">Gentag password:</label>
-        <input id="passwordConfirm" type="password" name="passwordConfirm" required>
+        <input id="passwordConfirm" type="password" name="passwordConfirm" required minlength="8">
+
         <label for="birthdate">Fødselsdato:</label>
-        <input id="birthdate" type="date" name="birthdate" required>
+        <input id="birthdate" type="date" name="birthdate" required
+          value="<%= old && old.birthdate ? old.birthdate : '' %>">
+
         <label for="psychCode">Psykolog-kode:</label>
-        <input id="psychCode" type="text" name="psychCode" required>
+        <input id="psychCode" type="text" name="psychCode" minlength="25" maxlength="25"
+          value="<%= old && old.psychCode ? old.psychCode : '' %>">
+
         <button type="submit">Opret konto</button>
       </form>
       <div class="links">

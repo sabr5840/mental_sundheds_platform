@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <title>Fejl</title>
+  <style>
+    body { background: #f8d7da; color: #842029; font-family: Arial, sans-serif; margin:0; }
+    .center { max-width: 400px; margin: 8vh auto; background: #fff; padding: 2rem; border-radius: 1rem; box-shadow:0 4px 32px #0001;}
+    h1 { font-size: 2rem; margin-bottom: .5em;}
+    p { margin: .5em 0;}
+    .dev { margin-top: 2em; font-size: 0.85em; color: #333; background: #eee; padding: 0.7em; border-radius: 0.4em;}
+    a { color: #842029; }
+  </style>
+</head>
+<body>
+  <div class="center">
+    <h1>Der opstod en fejl</h1>
+    <p><%= message %></p>
+    <p><a href="/">← Til forsiden</a></p>
+    <% if (error) { %>
+      <div class="dev">
+        <pre><%= error.stack %></pre>
+      </div>
+    <% } %>
+  </div>
+</body>
+</html>

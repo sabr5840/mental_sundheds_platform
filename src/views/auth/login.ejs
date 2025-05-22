@@ -39,6 +39,15 @@
       width: 100%;
       margin-top: -130px;
     }
+    .flash-error {
+      background: #fdecea;
+      color: #b71c1c;
+      border-radius: 0.25rem;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+    }
+    .flash-success { background: #e8f5e9; color: #1b5e20; }
     form {
       display: flex;
       flex-direction: column;
@@ -77,14 +86,6 @@
     .links a:hover {
       text-decoration: underline;
     }
-    .flash {
-      padding: 0.75rem;
-      border-radius: 0.25rem;
-      margin-bottom: 1rem;
-      font-size: 0.9rem;
-    }
-    .flash-error { background: #fdecea; color: #b71c1c; }
-    .flash-success { background: #e8f5e9; color: #1b5e20; }
   </style>
 </head>
 <body>
@@ -94,14 +95,22 @@
   <main>
     <div class="card">
       <% if (error && error.length) { %>
-        <div class="flash flash-error"><%= error[0] %></div>
+        <div class="flash-error">
+          <% error.forEach(msg => { %>
+            <div><%= msg %></div>
+          <% }) %>
+        </div>
       <% } %>
       <% if (success && success.length) { %>
-        <div class="flash flash-success"><%= success[0] %></div>
+        <div class="flash-success"><%= success[0] %></div>
       <% } %>
       <form action="/auth/login" method="POST">
+        <!-- CSRF-beskyttelse -->
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
         <label for="email">Email:</label>
-        <input id="email" type="email" name="email" required>
+        <input id="email" type="email" name="email" required
+          value="<%= old && old.email ? old.email : '' %>">
         <label for="password">Password:</label>
         <input id="password" type="password" name="password" required>
         <button type="submit">Log ind</button>
